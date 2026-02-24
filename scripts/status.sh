@@ -9,32 +9,32 @@ interval=0
 . ~/.config/axisdwm/scripts/bar_themes/gruvbox
 
 
-pkg_updates() {
-  updates=$({ timeout 20 checkupdates 2>/dev/null || true; } | wc -l)
-  if [ -z "$updates" ] || [ "$updates" -eq 0 ]; then
-    printf "  ^c$green^     Fully Updated"
-  else
-    printf "  ^c$green^     $updates updates"
-  fi
-}
-
-#battery() {
-#  BAT_PATH=""
-#  for bat in /sys/class/power_supply/BAT*; do
-#    if [ -d "$bat" ]; then
-#      BAT_PATH="$bat"
-#      break
-#    fi
-#  done
-#
-#  if [ -n "$BAT_PATH" ] && [ -f "$BAT_PATH/capacity" ]; then
-#    get_capacity=$(cat "$BAT_PATH/capacity")
-#    printf "^c$blue^   $get_capacity%%"
+#pkg_updates() {
+#  updates=$({ timeout 20 checkupdates 2>/dev/null || true; } | wc -l)
+#  if [ -z "$updates" ] || [ "$updates" -eq 0 ]; then
+#    printf "  ^c$green^     Fully Updated"
 #  else
-#    # Нет батареи
-#    printf "^c$blue^   N/A"
+#    printf "  ^c$green^     $updates updates"
 #  fi
 #}
+
+battery() {
+  BAT_PATH=""
+  for bat in /sys/class/power_supply/BAT*; do
+    if [ -d "$bat" ]; then
+      BAT_PATH="$bat"
+      break
+    fi
+  done
+
+  if [ -n "$BAT_PATH" ] && [ -f "$BAT_PATH/capacity" ]; then
+    get_capacity=$(cat "$BAT_PATH/capacity")
+    printf "^c$blue^   $get_capacity%%"
+  else
+    # Нет батареи
+    printf "^c$blue^   N/A"
+  fi
+}
 
 brightness() {
     max_brightness=$(cat /sys/class/backlight/*/max_brightness)
@@ -84,10 +84,10 @@ keyboard() {
 }
 
 temperature() {
-  temp=$(sensors | awk '/^Package id 0:/ {print $4}' | tr -d '+°C')
+  temp=$(sensors | awk '/^CPU:/ {print $2}')
   [ -z "$temp" ] && temp="N/A"
-  printf "^c$black^ ^b$red^   "
-  printf "^c$white^ ^b$grey^ %s°C" "$temp"
+  printf "^c$black^ ^b$red^ "
+  printf "^c$white^ ^b$grey^ %s" "$temp"
 }
 
 cpu() {
@@ -97,15 +97,15 @@ cpu() {
 }
 
 mem() {
-  printf "^c$blue^^b$black^  "
+  printf "^c$blue^^b$black^  "
   printf "^c$blue^ $(free -h | awk '/^Mem/ { print $3 }' | sed s/i//g)"
 }
 
 wlan() {
   case "$(cat /sys/class/net/wl*/operstate 2>/dev/null)" in
-  up) printf "^c$black^ ^b$blue^   ^d^%s" " ^c$blue^Connected" ;;
-  down) printf "^c$black^ ^b$blue^ 󰤭  ^d^%s" " ^c$blue^Disconnected" ;;
-  *) printf "^c$black^ ^b$blue^ 󰤭  ^d^%s" " ^c$blue^Disconnected" ;;
+  up) printf "^c$black^ ^b$blue^  ^d^%s" " ^c$blue^Connected" ;;
+  down) printf "^c$black^ ^b$blue^ 󰤭 ^d^%s" " ^c$blue^Disconnected" ;;
+  *) printf "^c$black^ ^b$blue^ 󰤭 ^d^%s" " ^c$blue^Disconnected" ;;
   esac
 }
 
@@ -123,15 +123,16 @@ uptime_info() {
 }
 
 clock() {
-  printf "^c$black^ ^b$darkblue^  "
+  printf "^c$black^ ^b$darkblue^  "
   printf "^c$black^^b$blue^ $(date '+%Y-%m-%d %H:%M') "
 }
 
 
 while true; do
-  [ $interval = 0 ] || [ $(($interval % 3600)) = 0 ] && updates=$(pkg_updates)
-  interval=$((interval + 1))
+  #[ $interval = 0 ] || [ $(($interval % 3600)) = 0 ] && updates=$(pkg_updates)
+  #interval=$((interval + 1))
 
-  sleep 1 && xsetroot -name "$updates $(brightness) $(volume) $(keyboard) $(temperature) $(cpu) $(mem) $(ip_address) $(wlan) $(clock)"
+  #sleep 1 && xsetroot -name "$updates $(brightness) $(volume) $(keyboard) $(temperature) $(cpu) $(mem) $(ip_address) $(wlan) $(clock)"
+  sleep 1 && xsetroot -name "$(brightness) $(volume) $(keyboard) $(temperature) $(wlan) $(clock)"
 done
 
